@@ -21,10 +21,11 @@ rows = []
 words = []
 
 def main():
-  with open('scrabble_words.txt', 'r') as words_file:
+  with open('google-books-common-words.txt', 'r') as words_file:
     global words
     words = words_file.readlines()
     words = [word.lower().strip() for word in words]
+    words.sort()
 
   # randomly populate rows
   for y in range(height):
@@ -49,16 +50,14 @@ def search(x, y, word, word_arr):
   ix = bisect.bisect_left(words, word)
 
   # if it's a word, add it to the results
-  len_words = len(words)
-  curr_word = words[ix]
-  if words[ix] == word:
+  if ix < len(words) and words[ix] == word:
     if len(word) >= min_word_length:
       if not word in results: # avoid duplicates
         results.append(word)
 
   # if there are words that start with this combo
   # keep drilling down (otherwise, give up)
-  if words[ix].startswith(word):
+  if ix < len(words) and words[ix].startswith(word):
     for dir in directions:
       new_x = x + dir[0]
       new_y = x + dir[1]

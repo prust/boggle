@@ -1,7 +1,7 @@
 const fs = require('fs');
 const _ = require('underscore');
 
-let words = fs.readFileSync('scrabble_words.txt', {encoding: 'utf8'});
+let words = fs.readFileSync('google-books-common-words.txt', {encoding: 'utf8'});
 words = words.toLowerCase().split(/\r?\n/);
 words.sort();
 
@@ -66,7 +66,7 @@ function search(x, y, word, word_arr) {
   var ix = _.sortedIndex(words, word);
 
   // if it's a word, add it to the results
-  if (words[ix] == word) {
+  if (ix < words.length && words[ix] == word) {
     if (word.length >= min_word_length)
       if (!results.includes(word)) // avoid duplicates
         results.push(word);
@@ -74,7 +74,7 @@ function search(x, y, word, word_arr) {
 
   // if there are words that start with this combo
   // keep drilling down (otherwise, give up)
-  if (words[ix].startsWith(word)) {
+  if (ix < words.length && words[ix].startsWith(word)) {
     for (let dir of directions) {
       let new_x = x + dir[0];
       let new_y = x + dir[1];
