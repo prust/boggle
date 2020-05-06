@@ -10,8 +10,8 @@ for (let arg of process.argv)
   if (arg.startsWith('--input='))
     input = fs.readFileSync(arg.replace('--input=', ''), {encoding: 'utf8'});
 
-const w = 4;
-const h = 4;
+const width = 4;
+const height = 4;
 const min_word_length = 3;
 const letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'];
 const results = [];
@@ -41,17 +41,17 @@ if (input) {
 }
 // randomly populate rows
 else {
-  for (let y = 0; y < h; y++) {
+  for (let y = 0; y < height; y++) {
     let row = [];
-    for (let x = 0; x < w; x++)
+    for (let x = 0; x < width; x++)
       row.push(_.sample(letters));
     rows.push(row);
   }
 }
 
 // start word-searching at each x,y position
-for (let x = 0; x < w; x++) {
-  for (let y = 0; y < h; y++)
+for (let x = 0; x < width; x++) {
+  for (let y = 0; y < height; y++)
     search(x, y, '', []);
 }
 
@@ -59,7 +59,7 @@ for (let result of results)
   console.log(result);
 
 function search(x, y, word, word_arr) {
-  word += rows[x][y];
+  word += rows[y][x];
   word_arr = word_arr.slice(); // clone
   word_arr.push([x, y]);
 
@@ -85,7 +85,7 @@ function search(x, y, word, word_arr) {
 }
 
 function isInBounds(x, y) {
-  return x >= 0 && y >= 0 && x < w && y < h;
+  return x >= 0 && y >= 0 && x < width && y < height;
 }
 
 function isUsed(x, y, word_arr) {
