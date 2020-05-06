@@ -1,9 +1,10 @@
 import random
 import bisect
 
-width = 4
-height = 4
-min_word_length = 3
+width = 5
+height = 5
+min_word_length = 4
+common_words_cutoff = 10000
 letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
 results = []
 directions = [
@@ -24,6 +25,8 @@ def main():
   with open('google-books-common-words.txt', 'r') as words_file:
     global words
     words = words_file.readlines()
+    if common_words_cutoff:
+      words = words[:common_words_cutoff]
     words = [word.lower().strip() for word in words]
     words.sort()
 
