@@ -1,8 +1,9 @@
 import random
 import bisect
+import threading
 
-width = 5
-height = 5
+width = 6
+height = 6
 min_word_length = 4
 common_words_cutoff = 10000
 letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
@@ -42,8 +43,24 @@ def main():
     for y in range(height):
       search(x, y, '', [])
 
+  t = threading.Timer(5.0, timeout)
+  t.start()
+
+  print(str(len(results)) + ' results')
+  guesses = []
+  while True:
+    guesses.append(input('Enter a guess: '))
+    if (guesses[len(guesses) - 1] in results):
+      print('Good guess')
+    else:
+      print('Sorry')
+
   for result in results:
     print(result)
+
+def timeout():
+  print('Time has elapsed')
+  quit()
 
 def search(x, y, word, word_arr):
   word += rows[y][x]
