@@ -1,0 +1,171 @@
+<!doctype html>
+<html>
+  <head>
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+
+      -webkit-touch-callout: none; /* iOS Safari */
+        -webkit-user-select: none; /* Safari */
+         -khtml-user-select: none; /* Konqueror HTML */
+           -moz-user-select: none; /* Firefox */
+            -ms-user-select: none; /* Internet Explorer/Edge */
+                user-select: none;
+
+        font-family: Helvetica;
+      }
+      table {
+        width: 100%;
+      }
+      td {
+        font-size: 35pt;
+        text-align: center;
+        border: 1px solid #eee;
+        padding: 20px;
+      }
+      input {
+        font-size: 35pt;
+        padding: 20px 0;
+        width: 100%;
+        border: 1px solid #eee;
+      }
+      .letter {
+        width: 100%;
+      }
+      .letter:hover {
+        background-color: #eee;
+      }
+      .score {
+        display: inline-block;
+        background-color: #999;
+        height: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="message">Connecting to server</div>
+    <div id="board"></div>
+
+    <div id="input_panel">
+      <input id="guess" type="text">
+    </div>
+    <div id="scores">
+    </div>
+
+    <script>
+      var ENTER = 13;
+
+      var socket = io(location.href);
+      
+      socket.on('connect', function() {
+        $('message').style.display = 'none';
+        console.log('connected to server');
+        var username = prompt("Please enter your name");
+        socket.emit('username', username);
+        
+        let is_valid = false;
+        let pts_per_word;
+        while (!is_valid) {
+          pts_per_word = prompt("Points per word", "1.0");
+          pts_per_word = parseFloat(pts_per_word);
+          if (!isNaN(pts_per_word))
+            is_valid = true;
+        }
+
+        socket.emit('pts-per-word', pts_per_word);
+      });
+
+      socket.on('game', function(rows) {
+        var html = '<table cellspacing="0">';
+        for (let row of rows) {
+          html += '<tr>';
+          for (let ch of row)
+            html += `<td><div class="letter">${ch}</div></td>`
+          html += '</tr>';
+        }
+        html += '</table>';
+        $('board').innerHTML = html;
+      });
+
+      socket.on('scores', function(evt) {
+        let scores = evt.scores;
+        let handicaps = evt.handicaps;
+
+        var html = '';
+        
+        for (var username in scores) {
+          // don't report anonymous people
+          // i think null happens when the user hits "Cancel" at the name prompt
+          if (username == 'anonymous' || username == 'null')
+            continue;
+
+          let handicap = username in handicaps ? ` (${handicaps[username]}x)` : '';
+          html += `${username}${handicap}:
+            <div class="score" style="width: ${scores[username] * 15}px"></div><br>`;
+        }
+        
+        $('scores').innerHTML = html;
+      });
+      
+      socket.on('disconnect', function() {
+        // i wonder why this happens regularly...
+        // is it a socket.io thing? a timeout somehow?
+        //alert('disconnected from server');
+      });
+
+      $('guess').addEventListener('keyup', function(evt) {
+        if (evt.keyCode == ENTER) {
+          submitGuess();
+        }
+      });
+
+      var current_el = null;
+      $('board').addEventListener('touchstart', onDown);
+      $('board').addEventListener('mousedown', onDown);
+      function onDown(evt) {
+        if (evt.target.className != 'letter')
+          return;
+
+        current_el = evt.target;
+        $('guess').value += evt.target.innerText;
+      }
+
+      $('board').addEventListener('mousemove', onMove);
+      $('board').addEventListener('touchmove', onMove);
+
+      function onMove(evt) {
+        evt.preventDefault();
+        if (!current_el)
+          return;
+        if (evt.target.className != 'letter')
+          return;
+
+        if (evt.target != current_el) {
+          current_el = evt.target;
+          $('guess').value += evt.target.innerText;
+        }
+      }
+
+      $('board').addEventListener('touchend', onUp);
+      $('board').addEventListener('mouseup', onUp);
+      function onUp(evt) {
+        current_el = null;
+        submitGuess();
+      }
+
+      function submitGuess() {
+        var guess = $('guess').value;
+        console.log(`Submitting "${guess}"`);
+        $('guess').value = '';
+        socket.emit('guess', guess);
+      }
+
+      // helper functions
+      function $(id) {
+        return document.getElementById(id);
+      }
+    </script>
+  </body>
+</html>
